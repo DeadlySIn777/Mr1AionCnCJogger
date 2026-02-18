@@ -1130,8 +1130,8 @@ void processSerialCommands(){
       else if(mt=="UCCNC") nm=MACHINE_UCCNC;
       else if(mt=="CARBIDE") nm=MACHINE_CARBIDE;
       else if(mt=="UGS") nm=MACHINE_UGS;
-      else if(mt=="OPENBUILDS") nm=MACHINE_OPENBUILDS;
-      else if(mt=="CNCJS") nm=MACHINE_CNCJS;
+      else if(mt=="OPENBUILDS") nm=MACHINE_UGS;
+      else if(mt=="CNCJS") nm=MACHINE_UGS;
       else if(mt=="MANUAL") nm=MACHINE_MANUAL;
       if(nm!=currentMachine){ currentMachine=nm; requestFullRedraw(); Serial.print("MACHINE:"); Serial.println(getMachineName()); }
 
