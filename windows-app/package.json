@@ -1,0 +1,112 @@
+{
+  "name": "aionmech-pendant-controller",
+  "version": "2.0.0",
+  "description": "AIONMECH Pendant Controller for CNC machines - Universal (FireControl, CutControl, Mach3/4, LinuxCNC, UCCNC, Carbide Motion, UGS, OpenBuilds, CNCjs)",
+  "main": "src/main-universal.js",
+  "scripts": {
+    "start": "electron src/main-universal.js",
+    "start-original": "electron src/main.js",
+    "build": "electron-builder",
+    "build-universal": "electron-builder --win --x64",
+    "build-portable": "electron-builder --win --x64 --config.nsis.oneClick=false --config.nsis.allowToChangeInstallationDirectory=true",
+    "pack": "electron-builder --dir",
+    "dist": "npm run build",
+    "postinstall": "electron-builder install-app-deps",
+    "dev": "electron src/main-universal.js --dev",
+    "dev-gpu-disabled": "electron src/main-universal.js --dev --disable-gpu"
+  },
+  "keywords": [
+    "cnc",
+    "pendant",
+    "aionmech",
+    "firecontrol",
+    "cutcontrol",
+    "plasma",
+    "mill",
+    "crossfire",
+    "mr1",
+    "titan",
+    "vulcan",
+    "esp32",
+    "serial",
+    "universal"
+  ],
+  "author": "AIONMECH",
+  "license": "MIT",
+  "devDependencies": {
+    "@electron-forge/cli": "^7.9.0",
+    "@electron-forge/maker-squirrel": "^7.9.0",
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4",
+    "electron-packager": "^17.1.2"
+  },
+  "dependencies": {
+    "auto-launch": "^5.0.5",
+    "electron-updater": "^6.6.2",
+    "esptool-js": "^0.4.7",
+    "extract-zip": "^2.0.1",
+    "node-fetch": "^3.3.2",
+    "serialport": "^12.0.0"
+  },
+  "optionalDependencies": {
+    "robotjs": "^0.6.0",
+    "node-hid": "^2.1.2"
+  },
+  "build": {
+    "appId": "com.aionmech.pendant-controller",
+    "productName": "AIONMECH Pendant Controller",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+  "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+  "icon": "assets/app-icon-multi.ico",
+      "requestedExecutionLevel": "asInvoker",
+      "artifactName": "${productName}-v${version}-${arch}.${ext}",
+      "publisherName": "AIONMECH",
+      "verifyUpdateCodeSignature": false,
+      "signAndEditExecutable": false
+    },
+  "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+  "installerIcon": "assets/app-icon-multi.ico",
+  "uninstallerIcon": "assets/app-icon-multi.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "menuCategory": "AIONMECH",
+      "shortcutName": "AIONMECH Pendant Controller"
+    },
+    "portable": {
+      "artifactName": "${productName}-Portable-v${version}-${arch}.exe",
+      "requestExecutionLevel": "user"
+    },
+    "extraResources": [
+      {
+        "from": "README.md",
+        "to": "README.md"
+      }
+    ],
+    "electronDownload": {
+      "cache": "./node_modules/.cache/electron"
+    }
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

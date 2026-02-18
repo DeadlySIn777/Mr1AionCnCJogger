@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AIONMECH CNC Pendant</title>
+    <style>
+        :root {
+            --primary-bg: #0f0f0f;
+            --secondary-bg: #1a1a1a;
+            --card-bg: #1e1e1e;
+            --aionmech-red: #e53935;
+            --aionmech-orange: #ff7043;
+            --aionmech-blue: #42a5f5;
+            --aionmech-green: #66bb6a;
+            --aionmech-purple: #ab47bc;
+            --text-primary: #ffffff;
+            --text-secondary: #9e9e9e;
+            --text-muted: #616161;
+            --border-color: #2a2a2a;
+            --success: #66bb6a;
+            --warning: #ffa726;
+            --error: #ef5350;
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #121218 40%, #0f1520 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Main Layout */
+        .app {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 16px;
+            gap: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .app {
+                max-width: 900px;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: auto auto 1fr;
+                grid-template-areas: 
+                    "header header"
+                    "status status"
+                    "left right";
+                gap: 20px;
+                padding: 24px;
+            }
+        }
+
+        /* Header - Minimal */
+        .header {
+            grid-area: header;
+            text-align: center;
+            padding: 12px 0;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--aionmech-orange), var(--aionmech-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        /* Cards - Glass Morphism */
+        .card {
+            background: rgba(30, 30, 30, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+            pointer-events: none;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .card-header:hover {
+            background: rgba(255,255,255,0.04);
+        }
+
+        .card-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-chevron {
+            width: 20px;
+            height: 20px;
+            color: var(--text-muted);
+            transition: transform 0.3s;
+        }
+
+        .card.collapsed .card-content { display: none; }
+        .card.collapsed .card-chevron { transform: rotate(-90deg); }
+
+        .card-content {
+            padding: 16px;
+        }
+
+        /* Status Grid - Compact */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .status-item {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: var(--radius-sm);
+            padding: 10px 8px;
+            text-align: center;
+        }
+
+        .status-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .status-value {
+            font-size: 0.875rem;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .status-connected { color: var(--aionmech-green); }
+        .status-disconnected { color: var(--error); }
+
+        /* Position Display */
+        .position-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .position-item {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            text-align: center;
+            border-left: 3px solid var(--aionmech-blue);
+        }
+
+        .position-item.x-axis { border-left-color: var(--aionmech-red); }
+        .position-item.y-axis { border-left-color: var(--aionmech-green); }
+        .position-item.z-axis { border-left-color: var(--aionmech-blue); }
+
+        .position-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .position-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Machine Cards */
+        .machine-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .machine-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 2px solid rgba(255, 255, 255, 0.06);
+            border-radius: var(--radius-sm);
+            padding: 14px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .machine-card:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .machine-card.active {
+            border-color: var(--aionmech-orange);
+            background: rgba(255,112,67,0.1);
+            box-shadow: 0 0 16px rgba(255, 112, 67, 0.2);
+        }
+
+        .machine-card.detected {
+            border-color: var(--aionmech-green);
+            background: rgba(102,187,106,0.1);
+            box-shadow: 0 0 16px rgba(102, 187, 106, 0.2);
+        }
+
+        .machine-icon {
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+        }
+
+        .machine-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Buttons */
+        .btn-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            padding: 10px 14px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            background: rgba(255,255,255,0.12);
+            border-color: rgba(255,255,255,0.18);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--aionmech-orange), var(--aionmech-red));
+            border: none;
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.1);
+        }
+
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 0.75rem;
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            flex: none;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            padding: 4px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: var(--radius-sm);
+            margin-bottom: 16px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab:hover { color: var(--text-primary); }
+        
+        .tab.active {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Control Groups */
+        .control-group {
+            margin-bottom: 16px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        /* Pendant State - Compact Badges */
+        .state-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .badge-label {
+            color: var(--text-muted);
+        }
+
+        .badge-value {
+            color: var(--text-primary);
+        }
+
+        .badge-value.orange { color: var(--aionmech-orange); }
+        .badge-value.green { color: var(--aionmech-green); }
+        .badge-value.blue { color: var(--aionmech-blue); }
+        .badge-value.purple { color: var(--aionmech-purple); }
+
+        /* Slider */
+        .slider-container {
+            padding: 4px 0;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--secondary-bg);
+            outline: none;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--aionmech-orange);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        /* Input */
+        .input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            padding: 10px 12px;
+            font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input:focus {
+            border-color: var(--aionmech-orange);
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        /* Color Picker */
+        .color-grid {
+            display: flex;
+            gap: 8px;
+        }
+
+        .color-option {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .color-option:hover {
+            transform: scale(1.15);
+            box-shadow: 0 0 12px rgba(255,255,255,0.15);
+        }
+
+        .color-option.active {
+            border-color: var(--text-primary);
+            box-shadow: 0 0 16px rgba(255,255,255,0.3);
+        }
+
+        /* Log */
+        .log-container {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            max-height: 80px;
+            overflow-y: auto;
+            font-family: 'SF Mono', 'Consolas', monospace;
+            font-size: 0.7rem;
+            line-height: 1.5;
+        }
+
+        .log-entry { color: var(--text-muted); }
+        .log-entry.info { color: var(--aionmech-green); }
+        .log-entry.warning { color: var(--warning); }
+        .log-entry.error { color: var(--error); }
+
+        /* Info Icon Button */
+        .info-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .info-btn:hover { color: var(--text-primary); }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip-content {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            min-width: 200px;
+            z-index: 100;
+            font-size: 0.75rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+
+        .tooltip:hover .tooltip-content {
+            display: block;
+        }
+
+        /* Checkbox */
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--aionmech-orange);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        /* Special States */
+        body.pendant-sleep {
+            filter: brightness(0.5);
+        }
+
+        body.pendant-sleep::after {
+            content: "SLEEPING";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: var(--warning);
+            padding: 16px 32px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            z-index: 1000;
+        }
+
+        body.estop-active {
+            background: var(--error) !important;
+        }
+
+        body.estop-active::before {
+            content: "EMERGENCY STOP";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--error);
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: 700;
+            z-index: 1000;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Left/Right columns for desktop */
+        .left-column { grid-area: left; }
+        .right-column { grid-area: right; }
+
+        @media (max-width: 767px) {
+            .left-column, .right-column {
+                display: contents;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <div class="header">
+            <h1>AIONMECH CNC Pendant</h1>
+        </div>
+
+        <!-- Status Panel -->
+        <div class="card" style="grid-area: status;">
+            <div class="card-header" onclick="toggleCard(this)">
+                <span class="card-title">Status</span>
+                <svg class="card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9l6 6 6-6"/>
+                </svg>
+            </div>
+            <div class="card-content">
+                <div class="status-grid">
+                    <div class="status-item">
+                        <span id="connection-icon" style="display:none;"></span>
+                        <div class="status-label">Link</div>
+                        <div class="status-value" id="connection-status">Searching</div>
+                    </div>
+                    <div class="status-item">
+                        <span id="software-icon" style="display:none;"></span>
+                        <div class="status-label">Software</div>
+                        <div class="status-value" id="software-status">None</div>
+                    </div>
+                    <div class="status-item">
+                        <span id="machine-icon" style="display:none;"></span>
+                        <div class="status-label">Machine</div>
+                        <div class="status-value" id="machine-status">Manual</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Units</div>
+                        <div class="status-value" id="units-status">MM</div>
+                    </div>
+                </div>
+                <div class="position-grid">
+                    <div class="position-item x-axis">
+                        <div class="position-label">X</div>
+                        <div class="position-value" id="pos-x">0.000</div>
+                    </div>
+                    <div class="position-item y-axis">
+                        <div class="position-label">Y</div>
+                        <div class="position-value" id="pos-y">0.000</div>
+                    </div>
+                    <div class="position-item z-axis">
+                        <div class="position-label">Z</div>
+                        <div class="position-value" id="pos-z">0.000</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Left Column -->
+        <div class="left-column" style="display: flex; flex-direction: column; gap: 16px;">
+            
+            <!-- Machine Detection -->
+            <div class="card">
+                <div class="card-header" onclick="toggleCard(this)">
+                    <span class="card-title">Machine</span>
+                    <svg class="card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                </div>
+                <div class="card-content">
+                    <div class="machine-grid">
+                        <div class="machine-card" data-machine="FIRECONTROL">
+                            <span class="machine-icon">🔥</span>
+                            <div class="machine-name">Plasma</div>
+                        </div>
+                        <div class="machine-card" data-machine="CUTCONTROL">
+                            <span class="machine-icon">⚙️</span>
+                            <div class="machine-name">Mill</div>
+                        </div>
+                        <div class="machine-card" data-machine="MACH3">
+                            <span class="machine-icon">🔧</span>
+                            <div class="machine-name">Mach3</div>
+                        </div>
+                        <div class="machine-card" data-machine="MACH4">
+                            <span class="machine-icon">🔧</span>
+                            <div class="machine-name">Mach4</div>
+                        </div>
+                        <div class="machine-card" data-machine="LINUXCNC">
+                            <span class="machine-icon">🐧</span>
+                            <div class="machine-name">LinuxCNC</div>
+                        </div>
+                        <div class="machine-card" data-machine="UCCNC">
+                            <span class="machine-icon">🎯</span>
+                            <div class="machine-name">UCCNC</div>
+                        </div>
+                        <div class="machine-card" data-machine="CARBIDE">
+                            <span class="machine-icon">💎</span>
+                            <div class="machine-name">Carbide</div>
+                        </div>
+                        <div class="machine-card" data-machine="UGS">
+                            <span class="machine-icon">📡</span>
+                            <div class="machine-name">UGS</div>
+                        </div>
+                        <div class="machine-card" data-machine="OPENBUILDS">
+                            <span class="machine-icon">🛠️</span>
+                            <div class="machine-name">OpenBuilds</div>
+                        </div>
+                        <div class="machine-card" data-machine="CNCJS">
+                            <span class="machine-icon">🌐</span>
+                            <div class="machine-name">CNCjs</div>
+                        </div>
+                        <div class="machine-card" data-machine="MANUAL">
+                            <span class="machine-icon">🎛️</span>
+                            <div class="machine-name">Manual</div>
+                        </div>
+                    </div>
+                    <div class="btn-row" style="margin-top: 12px;">
+                        <button class="btn btn-sm" id="auto-detect">Auto-Detect</button>
+                        <button class="btn btn-sm" id="refresh-machines">Refresh</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pendant State -->
+            <div class="card">
+                <div class="card-header" onclick="toggleCard(this)">
+                    <span class="card-title">Pendant State</span>
+                    <svg class="card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                </div>
+                <div class="card-content">
+                    <div class="state-badges">
+                        <div class="badge">
+                            <span class="badge-label">Axis:</span>
+                            <span class="badge-value orange" id="current-axis">Z</span>
+                        </div>
+                        <div class="badge">
+                            <span class="badge-label">Step:</span>
+                            <span class="badge-value green" id="current-distance">1.0mm</span>
+                        </div>
+                        <div class="badge">
+                            <span class="badge-label">Speed:</span>
+                            <span class="badge-value blue" id="current-speed">50%</span>
+                        </div>
+                        <div class="badge">
+                            <span class="badge-label">Power:</span>
+                            <span class="badge-value purple" id="power-state">Active</span>
+                        </div>
+                        <div class="badge">
+                            <span class="badge-label">E-Stop:</span>
+                            <span class="badge-value" id="estop-state" style="color: var(--aionmech-green);">OK</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Theme -->
+            <div class="card">
+                <div class="card-header" onclick="toggleCard(this)">
+                    <span class="card-title">Theme</span>
+                    <svg class="card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                </div>
+                <div class="card-content">
+                    <div class="control-group">
+                        <div class="control-label">Color</div>
+                        <div class="color-grid">
+                            <div class="color-option" data-color="18,18,18" style="background: #121212;"></div>
+                            <div class="color-option" data-color="255,107,53" style="background: #ff6b35;"></div>
+                            <div class="color-option" data-color="56,142,60" style="background: #388e3c;"></div>
+                            <div class="color-option" data-color="25,118,210" style="background: #1976d2;"></div>
+                            <div class="color-option" data-color="211,47,47" style="background: #d32f2f;"></div>
+                            <div class="color-option" data-color="156,39,176" style="background: #9c27b0;"></div>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="control-label">Hue</div>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="hue-slider" min="0" max="360" value="0">
+                        </div>
+                    </div>
+                    <div class="btn-row">
+                        <button class="btn btn-sm" id="enable-wheel">Rainbow</button>
+                        <button class="btn btn-sm" id="disable-wheel">Solid</button>
+                        <button class="btn btn-sm" id="theme-plasma">Plasma</button>
+                        <button class="btn btn-sm" id="theme-mill">Mill</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="right-column" style="display: flex; flex-direction: column; gap: 16px;">
+            
+            <!-- Controls -->
+            <div class="card">
+                <div class="card-header" onclick="toggleCard(this)">
+                    <span class="card-title">Controls</span>
+                    <svg class="card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                </div>
+                <div class="card-content">
+                    <!-- Tabs -->
+                    <div class="tabs">
+                        <button class="tab active" data-tab="main">Main</button>
+                        <button class="tab" data-tab="position">Position</button>
+                        <button class="tab" data-tab="advanced">Advanced</button>
+                    </div>
+
+                    <!-- Main Tab -->
+                    <div class="tab-content active" id="tab-main">
+                        <div class="control-group">
+                            <div class="control-label">Connection</div>
+                            <div class="btn-row">
+                                <button class="btn" id="reconnect">Reconnect</button>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <div class="control-label">Units</div>
+                            <div class="btn-row">
+                                <button class="btn" id="units-mm">Metric (mm)</button>
+                                <button class="btn" id="units-inches">Imperial (in)</button>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <div class="control-label">Encoder Scale</div>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="encoder-scale-slider" min="1" max="10" value="1" step="1">
+                            </div>
+                            <div style="text-align: center; font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+                                <span id="encoder-scale-value">1</span> click(s) per unit
+                            </div>
+                            <div class="btn-row" style="margin-top: 8px;">
+                                <button class="btn btn-sm" id="encoder-apply">Apply</button>
+                                <button class="btn btn-sm" id="encoder-status">Status</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Position Tab -->
+                    <div class="tab-content" id="tab-position">
+                        <div class="control-group">
+                            <div class="btn-row">
+                                <button class="btn btn-primary" id="position-zero">Zero All</button>
+                                <button class="btn" id="position-sync">Get Positions</button>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <div class="control-label">Set Position</div>
+                            <div class="input-row">
+                                <input id="pos-input-x" type="number" step="0.001" placeholder="X" class="input">
+                                <input id="pos-input-y" type="number" step="0.001" placeholder="Y" class="input">
+                                <input id="pos-input-z" type="number" step="0.001" placeholder="Z" class="input">
+                            </div>
+                        </div>
+                        <div class="btn-row">
+                            <button class="btn" id="apply-positions">Apply</button>
+                            <button class="btn" id="clear-positions">Clear</button>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Tab -->
+                    <div class="tab-content" id="tab-advanced">
+                        <div class="control-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="toggle-testing">
+                                Enable testing mode
+                            </label>
+                            <button class="btn btn-sm" id="test-connection" style="display:none; margin-top: 8px;">Test Connection</button>
+                        </div>
+                        <div class="control-group">
+                            <div class="btn-row">
+                                <button class="btn btn-sm" id="show-info">Info</button>
+                                <button class="btn btn-sm" id="open-devtools">Debug</button>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <div class="control-label">Updates</div>
+                            <div class="btn-row">
+                                <button class="btn btn-sm" id="check-updates">Check</button>
+                                <button class="btn btn-sm btn-primary" id="install-update">Install</button>
+                            </div>
+                            <div id="update-status" style="margin-top: 6px; font-size: 0.75rem; color: var(--text-secondary);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Button Guide (Collapsed by default) -->
+            <div class="card collapsed">
+                <div class="card-header" onclick="toggleCard(this)">
+                    <span class="card-title">Button Guide</span>
+                    <svg class="card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                </div>
+                <div class="card-content" style="font-size: 0.75rem; line-height: 1.6;">
+                    <div style="display: grid; gap: 8px;">
+                        <div><strong style="color: var(--aionmech-orange);">Button 1:</strong> Short = Axis | Long = Distance</div>
+                        <div><strong style="color: var(--aionmech-green);">Button 2:</strong> Short = Speed | Long = WCS/MCS</div>
+                        <div><strong style="color: var(--aionmech-blue);">Toggle:</strong> ON = Active | OFF = Sleep</div>
+                        <div><strong style="color: var(--error);">E-Stop:</strong> Emergency stop control</div>
+                        <div><strong style="color: var(--aionmech-purple);">Encoder:</strong> CW/CCW = Jog axis</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Log -->
+            <div class="card">
+                <div class="card-header" onclick="toggleCard(this)">
+                    <span class="card-title">Log</span>
+                    <svg class="card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                </div>
+                <div class="card-content">
+                    <div class="log-container" id="log-container">
+                        <div class="log-entry info">Pendant Controller ready</div>
+                        <div class="log-entry">Searching for ESP32...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Card collapse toggle
+        function toggleCard(header) {
+            header.closest('.card').classList.toggle('collapsed');
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabGroup = this.closest('.card-content');
+                tabGroup.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tabGroup.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                tabGroup.querySelector('#tab-' + this.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
+    <script src="renderer-universal.js"></script>
+</body>
+</html>

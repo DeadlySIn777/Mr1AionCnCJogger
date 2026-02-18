@@ -1,0 +1,22 @@
+{
+  "roku_ip": "192.168.1.100",
+  "wake_word": "hey assistant",
+  "voice_rate": 150,
+  "voice_volume": 0.9,
+  "tv_model": "TCL_Roku_55",
+  "cec_enabled": true,
+  "lora_gateway_port": "/dev/ttyUSB0",
+  "smart_devices": {
+    "living_room_lights": "device_001",
+    "bedroom_lights": "device_002",
+    "kitchen_lights": "device_003",
+    "fan": "device_004"
+  },
+  "alexa_skill_id": "your_skill_id_here",
+  "display_settings": {
+    "resolution": "3840x2160",
+    "scaling": 1.25,
+    "theme": "dark",
+    "font_size": "large"
+  }
+}

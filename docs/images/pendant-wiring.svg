@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <style>
+      .title { font: 700 24px 'Segoe UI', sans-serif; fill: #0d223a; }
+      .label { font: 600 15px 'Segoe UI', sans-serif; fill: #0d223a; }
+      .sub   { font: 500 13px 'Segoe UI', sans-serif; fill: #2a3f5f; }
+      .pin   { font: 500 12px 'Consolas', monospace; fill: #263238; }
+      .note  { font: 500 12px 'Segoe UI', sans-serif; fill: #5a6b85; }
+      .box   { fill: #f4f7fb; stroke: #9fb3c8; stroke-width: 2; rx: 10; }
+      .wire  { stroke-width: 2.5; fill: none; }
+      .gnd   { stroke: #444; }
+      .pwr   { stroke: #e33; }
+      .sig   { stroke: #0a84ff; }
+      .spi   { stroke: #16a34a; }
+      .gpio  { stroke: #8b5cf6; }
+      .dot   { fill: #0a84ff; }
+      .hdr   { fill: #fff; stroke: #9fb3c8; stroke-width: 1.5; }
+      .hdrpin{ fill: #dde6f2; stroke: #9fb3c8; stroke-width: 1; }
+      .badge { font: 600 12px 'Segoe UI', sans-serif; fill: #fff; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0a84ff" />
+    </marker>
+  </defs>
+
+  <text x="30" y="40" class="title">AIONMECH Pendant – ESP32-D Wiring Schematic</text>
+  <text x="30" y="64" class="sub">GC9A1 LCD, Rotary Encoder, Buttons, Toggle, and 19mm E‑Stop (NC)</text>
+
+  <!-- ESP32 board block -->
+  <rect x="420" y="120" width="300" height="520" class="box"/>
+  <text x="570" y="150" class="label" text-anchor="middle">ESP32‑D (38‑pin) Dev Module</text>
+
+  <!-- Left header pins (GPIO) -->
+  <g>
+    <rect x="445" y="180" width="20" height="440" class="hdr"/>
+    <!-- GPIO labels left column -->
+    <g class="pin">
+      <text x="475" y="205">GPIO32</text>
+      <text x="475" y="235">GPIO33</text>
+      <text x="475" y="265">GPIO25</text>
+      <text x="475" y="295">GPIO26</text>
+      <text x="475" y="325">GPIO27</text>
+      <text x="475" y="355">GPIO14</text>
+      <text x="475" y="385">GPIO18 (SCLK)</text>
+      <text x="475" y="415">GPIO23 (MOSI)</text>
+      <text x="475" y="445">GPIO15 (CS)</text>
+      <text x="475" y="475">GPIO02 (DC)</text>
+      <text x="475" y="505">GPIO21 (RST)</text>
+      <text x="475" y="535">3V3</text>
+      <text x="475" y="565">GND</text>
+    </g>
+  </g>
+
+  <!-- Right side legends for signals -->
+  <g class="sub">
+    <text x="730" y="205">Encoder A</text>
+    <text x="730" y="235">Encoder B</text>
+    <text x="730" y="265">Button 1</text>
+    <text x="730" y="295">Button 2</text>
+    <text x="730" y="325">Toggle (SPST)</text>
+    <text x="730" y="355">E‑STOP (NC)</text>
+    <text x="730" y="385">LCD SCLK</text>
+    <text x="730" y="415">LCD MOSI</text>
+    <text x="730" y="445">LCD CS</text>
+    <text x="730" y="475">LCD DC</text>
+    <text x="730" y="505">LCD RST</text>
+    <text x="730" y="535">LCD VCC</text>
+    <text x="730" y="565">Common GND</text>
+  </g>
+
+  <!-- Peripheral blocks -->
+  <!-- LCD -->
+  <rect x="60" y="130" width="260" height="180" class="box"/>
+  <text x="190" y="160" class="label" text-anchor="middle">GC9A1 Round LCD (SPI, 3.3V)</text>
+  <g class="pin">
+    <text x="80" y="185">VCC</text>
+    <text x="80" y="210">GND</text>
+    <text x="80" y="235">SCL (SCLK)</text>
+    <text x="80" y="260">SDA (MOSI)</text>
+    <text x="200" y="185">CS</text>
+    <text x="200" y="210">DC</text>
+    <text x="200" y="235">RST</text>
+    <text x="200" y="260">BL (3.3V)</text>
+  </g>
+
+  <!-- Encoder -->
+  <rect x="60" y="350" width="260" height="140" class="box"/>
+  <text x="190" y="378" class="label" text-anchor="middle">Rotary Encoder (A/B, GND)</text>
+  <g class="pin">
+    <text x="80" y="405">A (CLK)</text>
+    <text x="80" y="430">B (DT)</text>
+    <text x="80" y="455">COM / Shield → GND</text>
+  </g>
+
+  <!-- Buttons -->
+  <rect x="60" y="520" width="260" height="120" class="box"/>
+  <text x="190" y="548" class="label" text-anchor="middle">Button 1, Button 2 (NO)</text>
+  <g class="pin">
+    <text x="80" y="575">Btn1 → GPIO25, other → GND</text>
+    <text x="80" y="600">Btn2 → GPIO26, other → GND</text>
+  </g>
+
+  <!-- Toggle -->
+  <rect x="870" y="520" width="260" height="120" class="box"/>
+  <text x="1000" y="548" class="label" text-anchor="middle">Toggle (SPST)</text>
+  <g class="pin">
+    <text x="890" y="575">One leg → GPIO27</text>
+    <text x="890" y="600">Other leg → GND</text>
+  </g>
+
+  <!-- E-STOP -->
+  <rect x="870" y="350" width="260" height="140" class="box"/>
+  <text x="1000" y="378" class="label" text-anchor="middle">E‑STOP (19mm, 1×NC)</text>
+  <g class="pin">
+    <text x="890" y="405">NC → GPIO14</text>
+    <text x="890" y="430">COM → GND</text>
+    <text x="890" y="455" class="note">Normal: NC closed (LOW)</text>
+    <text x="890" y="475" class="note">Pressed: NC open (HIGH)</text>
+  </g>
+
+  <!-- Power badge -->
+  <rect x="420" y="660" width="300" height="50" fill="#0a84ff" rx="8"/>
+  <text x="570" y="692" class="badge" text-anchor="middle">USB‑C 5V → ESP32; LCD/Logic 3.3V ONLY</text>
+
+  <!-- Wires from LCD to ESP32 -->
+  <g>
+    <line x1="120" y1="180" x2="520" y2="535" class="wire pwr"/>
+    <circle cx="520" cy="535" r="4" class="dot"/>
+    <line x1="120" y1="205" x2="520" y2="565" class="wire gnd"/>
+    <line x1="160" y1="230" x2="520" y2="385" class="wire spi"/>
+    <line x1="160" y1="255" x2="520" y2="415" class="wire spi"/>
+    <line x1="255" y1="180" x2="520" y2="445" class="wire spi"/>
+    <line x1="255" y1="205" x2="520" y2="475" class="wire spi"/>
+    <line x1="255" y1="230" x2="520" y2="505" class="wire spi"/>
+  </g>
+
+  <!-- Wires from Encoder to ESP32 -->
+  <g>
+    <line x1="160" y1="405" x2="520" y2="205" class="wire sig"/>
+    <line x1="160" y1="430" x2="520" y2="235" class="wire sig"/>
+    <line x1="160" y1="455" x2="520" y2="565" class="wire gnd"/>
+  </g>
+
+  <!-- Wires from Buttons to ESP32 -->
+  <g>
+    <line x1="210" y1="575" x2="520" y2="265" class="wire gpio"/>
+    <line x1="210" y1="600" x2="520" y2="295" class="wire gpio"/>
+    <line x1="120" y1="600" x2="520" y2="565" class="wire gnd"/>
+  </g>
+
+  <!-- Wires from Toggle to ESP32 -->
+  <g>
+    <line x1="980" y1="575" x2="720" y2="325" class="wire gpio"/>
+    <line x1="980" y1="600" x2="720" y2="565" class="wire gnd"/>
+  </g>
+
+  <!-- Wires from E-STOP to ESP32 -->
+  <g>
+    <line x1="980" y1="405" x2="720" y2="355" class="wire gpio"/>
+    <line x1="980" y1="430" x2="720" y2="565" class="wire gnd"/>
+  </g>
+
+  <!-- Legend -->
+  <g>
+    <rect x="60" y="680" width="340" height="90" class="box"/>
+    <text x="80" y="705" class="sub">Legend:</text>
+    <g class="sub">
+      <line x1="80" y1="725" x2="110" y2="725" class="wire pwr"/>
+      <text x="120" y="730">Power (3.3V / 5V USB input)</text>
+      <line x1="80" y1="745" x2="110" y2="745" class="wire gnd"/>
+      <text x="120" y="750">Ground</text>
+      <line x1="220" y1="725" x2="250" y2="725" class="wire spi"/>
+      <text x="260" y="730">SPI</text>
+      <line x1="220" y1="745" x2="250" y2="745" class="wire gpio"/>
+      <text x="260" y="750">GPIO / Digital</text>
+    </g>
+  </g>
+
+  <!-- Notes -->
+  <text x="870" y="150" class="note">All inputs use INPUT_PULLUP; connect switches to GND</text>
+  <text x="870" y="170" class="note">GC9A1 is 3.3V logic. Do NOT feed 5V into LCD or GPIOs</text>
+  <text x="870" y="190" class="note">E‑STOP requires NC contact block → NC→GPIO14, COM→GND</text>
+</svg>

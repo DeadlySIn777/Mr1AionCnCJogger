@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIONMECH CNC Pendant - Wiring Guide</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 0.5in;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.4;
+            color: #1a1a2e;
+            max-width: 8.5in;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+        }
+        
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.2em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+        
+        h2 {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+        
+        h3 {
+            color: #764ba2;
+            margin-top: 25px;
+        }
+        
+        .parts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .part-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .part-card .icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .part-card .name {
+            font-weight: bold;
+            color: #1a1a2e;
+        }
+        
+        .part-card .details {
+            font-size: 0.85em;
+            color: #6c757d;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.95em;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+        }
+        
+        td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .gpio {
+            font-family: 'Courier New', monospace;
+            background: #e7f1ff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #0066cc;
+        }
+        
+        .voltage-3v3 {
+            background: #d4edda;
+            color: #155724;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .voltage-5v {
+            background: #fff3cd;
+            color: #856404;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .voltage-gnd {
+            background: #1a1a2e;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .danger-box {
+            background: #f8d7da;
+            border-left: 5px solid #dc3545;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .success-box {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .wiring-diagram {
+            background: #1a1a2e;
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            line-height: 1.3;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .control-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .control-card h4 {
+            margin: 0 0 15px 0;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .control-card .gpio-tag {
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+        }
+        
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .checklist li {
+            padding: 8px 0;
+            border-bottom: 1px dashed #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checklist li::before {
+            content: "☐";
+            font-size: 1.2em;
+            color: #667eea;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .page-break {
+            page-break-before: always;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+            }
+            .header {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            th {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔌 AIONMECH CNC Pendant</h1>
+        <div class="subtitle">Complete Wiring Guide - Universal CNC Controller</div>
+    </div>
+
+    <h2>📦 Parts List</h2>
+    
+    <div class="parts-grid">
+        <div class="part-card">
+            <div class="icon">🎛️</div>
+            <div class="name">ESP32-WROOM</div>
+            <div class="details">38-pin USB-C Board</div>
+        </div>
+        <div class="part-card">
+            <div class="icon">📺</div>
+            <div class="name">GC9A01 LCD</div>
+            <div class="details">240×240 Round Display</div>
+        </div>
+        <div class="part-card">
+            <div class="icon">🔄</div>
+            <div class="name">Rotary Encoder</div>
+            <div class="details">6-pin Industrial</div>
+        </div>
+        <div class="part-card">
+            <div class="icon">🔘</div>
+            <div class="name">Momentary Buttons</div>
+            <div class="details">×2 Push Buttons</div>
+        </div>
+        <div class="part-card">
+            <div class="icon">🔛</div>
+            <div class="name">Latching Switch</div>
+            <div class="details">Power Toggle</div>
+        </div>
+        <div class="part-card">
+            <div class="icon">🛑</div>
+            <div class="name">E-Stop Button</div>
+            <div class="details">19mm NC Contact</div>
+        </div>
+    </div>
+
+    <h2>🖥️ LCD Display Wiring</h2>
+    
+    <table>
+        <tr>
+            <th>LCD Pin</th>
+            <th>→</th>
+            <th>ESP32</th>
+            <th>Wire Color</th>
+        </tr>
+        <tr>
+            <td>VCC</td>
+            <td>→</td>
+            <td><span class="voltage-3v3">3V3</span></td>
+            <td>🔴 Red</td>
+        </tr>
+        <tr>
+            <td>GND</td>
+            <td>→</td>
+            <td><span class="voltage-gnd">GND</span></td>
+            <td>⚫ Black</td>
+        </tr>
+        <tr>
+            <td>SCLK</td>
+            <td>→</td>
+            <td><span class="gpio">GPIO18</span></td>
+            <td>🟡 Yellow</td>
+        </tr>
+        <tr>
+            <td>MOSI/SDA</td>
+            <td>→</td>
+            <td><span class="gpio">GPIO23</span></td>
+            <td>🔵 Blue</td>
+        </tr>
+        <tr>
+            <td>CS</td>
+            <td>→</td>
+            <td><span class="gpio">GPIO15</span></td>
+            <td>🟢 Green</td>
+        </tr>
+        <tr>
+            <td>DC</td>
+            <td>→</td>
+            <td><span class="gpio">GPIO2</span></td>
+            <td>🟠 Orange</td>
+        </tr>
+        <tr>
+            <td>RST</td>
+            <td>→</td>
+            <td><span class="gpio">GPIO21</span></td>
+            <td>🟣 Purple</td>
+        </tr>
+        <tr>
+            <td>BL</td>
+            <td>→</td>
+            <td><span class="voltage-3v3">3V3</span></td>
+            <td>🔴 Red</td>
+        </tr>
+    </table>
+
+    <div class="danger-box">
+        ⚠️ <strong>CRITICAL:</strong> LCD must use <strong>3V3 ONLY</strong> — connecting 5V will destroy the display!
+    </div>
+
+    <h2>🔄 Rotary Encoder Wiring (6-Pin)</h2>
+    
+    <table>
+        <tr>
+            <th>Encoder Pin</th>
+            <th>→</th>
+            <th>ESP32</th>
+            <th>Notes</th>
+        </tr>
+        <tr>
+            <td><strong>A</strong></td>
+            <td>→</td>
+            <td><span class="gpio">GPIO32</span></td>
+            <td>Phase A signal</td>
+        </tr>
+        <tr>
+            <td><strong>B</strong></td>
+            <td>→</td>
+            <td><span class="gpio">GPIO33</span></td>
+            <td>Phase B signal</td>
+        </tr>
+        <tr>
+            <td><strong>OV</strong></td>
+            <td>→</td>
+            <td><span class="voltage-gnd">GND</span></td>
+            <td>Ground (0V)</td>
+        </tr>
+        <tr>
+            <td><strong>VCC</strong></td>
+            <td>→</td>
+            <td><span class="voltage-5v">5V</span></td>
+            <td>Power supply</td>
+        </tr>
+        <tr>
+            <td>A̅</td>
+            <td>→</td>
+            <td>❌ Nothing</td>
+            <td>Leave disconnected</td>
+        </tr>
+        <tr>
+            <td>B̅</td>
+            <td>→</td>
+            <td>❌ Nothing</td>
+            <td>Leave disconnected</td>
+        </tr>
+    </table>
+
+    <div class="warning-box">
+        ℹ️ Encoder uses <strong>5V power</strong> but ESP32 GPIO inputs are 5V tolerant, so this is safe.
+    </div>
+
+    <h2>🔘 Buttons & Switches Wiring</h2>
+    
+    <table>
+        <tr>
+            <th>Component</th>
+            <th>Type</th>
+            <th>ESP32 Pin</th>
+            <th>Other Terminal</th>
+        </tr>
+        <tr>
+            <td><strong>Button 1</strong></td>
+            <td>Momentary</td>
+            <td><span class="gpio">GPIO25</span></td>
+            <td><span class="voltage-gnd">GND</span></td>
+        </tr>
+        <tr>
+            <td><strong>Button 2</strong></td>
+            <td>Momentary</td>
+            <td><span class="gpio">GPIO4</span></td>
+            <td><span class="voltage-gnd">GND</span></td>
+        </tr>
+        <tr>
+            <td><strong>Power Switch</strong></td>
+            <td>Latching</td>
+            <td><span class="gpio">GPIO27</span></td>
+            <td><span class="voltage-gnd">GND</span></td>
+        </tr>
+        <tr>
+            <td><strong>E-Stop</strong></td>
+            <td>NC Contact</td>
+            <td><span class="gpio">GPIO14</span></td>
+            <td><span class="voltage-gnd">GND</span></td>
+        </tr>
+    </table>
+
+    <div class="success-box">
+        ✅ All buttons use ESP32 internal pull-ups. No external resistors needed!
+    </div>
+
+    <div class="page-break"></div>
+
+    <h2>📐 Visual Wiring Diagram</h2>
+    
+    <div class="wiring-diagram">                        ESP32-WROOM 38-PIN (USB-C UP)
+                    ┌─────────────────────────────┐
+                    │         USB-C PORT          │
+                    ├─────────────────────────────┤
+       ⚠️ NO!  CLK │●                          ●│ 5V ────► ENCODER VCC
+                    │●                          ●│
+                    │●                          ●│
+        LCD DC  ◄───│● GPIO2               GPIO14│───► E-STOP (NC)
+                    │●                     GPIO27│───► POWER SWITCH
+                    │●                     GPIO25│───► BUTTON 1
+                    │●                      GPIO4│───► BUTTON 2
+        LCD CS  ◄───│● GPIO15              GPIO33│───► ENCODER B
+                    │●                     GPIO32│───► ENCODER A
+       LCD SCLK ◄───│● GPIO18                   ●│
+       LCD MOSI ◄───│● GPIO23                   ●│
+        LCD RST ◄───│● GPIO21                   ●│
+                    │●                          ●│
+      LCD GND ◄─────│● GND                  3V3 │───► LCD VCC + BL
+   ENCODER OV ◄─────│● GND                     ●│
+ ALL BUTTONS ◄──────│● GND                     ●│
+                    └─────────────────────────────┘</div>
+
+    <h2>🎛️ Control Functions</h2>
+    
+    <div class="controls-grid">
+        <div class="control-card">
+            <h4>🔘 Button 1 <span class="gpio-tag">GPIO25</span></h4>
+            <table>
+                <tr><td><strong>Short Press</strong></td><td>Change Axis (X→Y→Z)</td></tr>
+                <tr><td><strong>Long Press (2s)</strong></td><td>Change Jog Distance</td></tr>
+            </table>
+        </div>
+        
+        <div class="control-card">
+            <h4>🔘 Button 2 <span class="gpio-tag">GPIO4</span></h4>
+            <table>
+                <tr><td><strong>Short Press</strong></td><td>Change Speed</td></tr>
+                <tr><td><strong>Long Press (2s)</strong></td><td>Toggle WCS/MCS</td></tr>
+            </table>
+        </div>
+        
+        <div class="control-card">
+            <h4>🔛 Power Switch <span class="gpio-tag">GPIO27</span></h4>
+            <table>
+                <tr><td><strong>ON Position</strong></td><td>Pendant Active</td></tr>
+                <tr><td><strong>OFF Position</strong></td><td>Sleep Mode</td></tr>
+            </table>
+        </div>
+        
+        <div class="control-card">
+            <h4>🛑 E-Stop <span class="gpio-tag">GPIO14</span></h4>
+            <table>
+                <tr><td><strong>Released</strong></td><td>Normal Operation</td></tr>
+                <tr><td><strong>Pressed</strong></td><td><strong>ALL MOTION BLOCKED</strong></td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="control-card" style="margin-top: 20px;">
+        <h4>🔄 Rotary Encoder <span class="gpio-tag">GPIO32/33</span></h4>
+        <table>
+            <tr><td><strong>Rotate Clockwise</strong></td><td>Jog + Direction</td></tr>
+            <tr><td><strong>Rotate Counter-Clockwise</strong></td><td>Jog − Direction</td></tr>
+        </table>
+    </div>
+
+    <h2>⚠️ Safety Warnings</h2>
+    
+    <div class="two-column">
+        <div>
+            <div class="danger-box">
+                <h4 style="margin-top:0;">🚫 NEVER Connect:</h4>
+                <ul style="margin-bottom:0;">
+                    <li><strong>CLK pin</strong> — Flash, will brick ESP32</li>
+                    <li><strong>5V to LCD</strong> — Will destroy display</li>
+                    <li><strong>GPIO0</strong> — Boot mode failure</li>
+                    <li><strong>GPIO6-11</strong> — Flash memory pins</li>
+                    <li><strong>GPIO12</strong> — Boot strap failure</li>
+                </ul>
+            </div>
+        </div>
+        <div>
+            <div class="success-box">
+                <h4 style="margin-top:0;">✅ Power Rules:</h4>
+                <ul style="margin-bottom:0;">
+                    <li>LCD → <strong>3V3 only</strong></li>
+                    <li>Encoder → <strong>5V</strong></li>
+                    <li>Buttons → No power needed</li>
+                    <li>E-Stop → Use NC contact</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <h2>✅ Pre-Power Checklist</h2>
+    
+    <ul class="checklist">
+        <li>LCD VCC → 3V3 (NOT 5V!)</li>
+        <li>LCD GND → GND</li>
+        <li>Encoder VCC → 5V</li>
+        <li>Encoder OV → GND</li>
+        <li>Encoder A → GPIO32, B → GPIO33</li>
+        <li>Encoder A̅ and B̅ → NOT CONNECTED</li>
+        <li>Button 1 → GPIO25 to GND</li>
+        <li>Button 2 → GPIO4 to GND</li>
+        <li>Power Switch → GPIO27 to GND</li>
+        <li>E-Stop NC → GPIO14 to GND</li>
+        <li>No wires on CLK, GPIO0, GPIO6-11</li>
+    </ul>
+
+    <h2>🚀 First Power On</h2>
+    
+    <ol>
+        <li><strong>Connect USB-C</strong> to your PC</li>
+        <li><strong>Open Serial Monitor</strong> at 115200 baud</li>
+        <li><strong>Look for:</strong> <code>PENDANT:READY</code></li>
+        <li><strong>Test encoder</strong> — rotate and watch for jog commands</li>
+        <li><strong>Test buttons</strong> — press and watch LCD change</li>
+        <li><strong>Test E-Stop</strong> — should show red screen when pressed</li>
+    </ol>
+
+    <div class="success-box">
+        <strong>🎉 Success!</strong> If you see <code>PENDANT:READY</code>, your pendant is working!<br>
+        Install the Windows app from <code>windows-app/dist/</code> and start jogging!
+    </div>
+
+    <h2>🔧 Troubleshooting</h2>
+    
+    <table>
+        <tr>
+            <th>Problem</th>
+            <th>Solution</th>
+        </tr>
+        <tr>
+            <td>Black LCD screen</td>
+            <td>Check 3V3 power and SPI wiring (GPIO18, 23, 15, 2, 21)</td>
+        </tr>
+        <tr>
+            <td>No serial output</td>
+            <td>Verify baud rate is 115200, try different USB cable</td>
+        </tr>
+        <tr>
+            <td>Encoder no response</td>
+            <td>Check A→GPIO32, B→GPIO33, and 5V power to VCC</td>
+        </tr>
+        <tr>
+            <td>Buttons no response</td>
+            <td>Check GPIO→GND wiring, ensure buttons are momentary</td>
+        </tr>
+        <tr>
+            <td>E-Stop always active</td>
+            <td>Verify using NC (Normally Closed) contact</td>
+        </tr>
+        <tr>
+            <td>ESP32 won't boot</td>
+            <td>Remove any wires from GPIO0, GPIO12</td>
+        </tr>
+    </table>
+
+    <div style="margin-top: 40px; text-align: center; color: #6c757d; font-size: 0.9em;">
+        <p><strong>AIONMECH Universal CNC Pendant</strong> — Version 2.0.0</p>
+        <p>Supports: FireControl • CutControl • Mach3/4 • LinuxCNC • UCCNC • Carbide Motion • UGS • OpenBuilds • CNCjs</p>
+    </div>
+</body>
+</html>

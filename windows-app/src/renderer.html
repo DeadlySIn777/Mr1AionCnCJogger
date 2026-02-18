@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIONMECH Pendant RGB Controller</title>
+    <style>
+        :root {
+            /* AIONMECH Official Color Palette */
+            --primary-bg: #121212;
+            --secondary-bg: #1e1e1e;
+            --tertiary-bg: #2d2d2d;
+            --aionmech-red: #d32f2f;
+            --aionmech-orange: #ff6b35;
+            --aionmech-blue: #1976d2;
+            --aionmech-green: #388e3c;
+            --aionmech-purple: #9c27b0;
+            --aionmech-gray: #424242;
+            --aionmech-light-gray: #757575;
+            
+            /* Machine-specific themes */
+            --accent-color: var(--aionmech-orange);
+            --accent-light: #ff8a65;
+            --accent-dark: #bf360c;
+            
+            /* Glass morphism */
+            --glass-bg: rgba(30, 30, 30, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-shadow: rgba(0, 0, 0, 0.4);
+            
+            /* Text colors */
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-muted: #757575;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 35%, var(--tertiary-bg) 100%);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            position: relative;
+            -webkit-text-size-adjust: 100%;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+
+        /* Enhanced animated background with AIONMECH branding */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 15% 85%, rgba(255, 107, 53, 0.08) 0%, transparent 60%),
+                radial-gradient(circle at 85% 15%, rgba(25, 118, 210, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(211, 47, 47, 0.04) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+            animation: aionmechAmbient 25s ease-in-out infinite;
+        }
+
+        @keyframes aionmechAmbient {
+            0%, 100% { 
+                transform: rotate(0deg) scale(1);
+                opacity: 0.8;
+            }
+            33% { 
+                transform: rotate(1deg) scale(1.02);
+                opacity: 1;
+            }
+            66% { 
+                transform: rotate(-0.5deg) scale(0.98);
+                opacity: 0.9;
+            }
+        }
+
+        .header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 1px 20px var(--glass-shadow);
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                var(--aionmech-orange), 
+                var(--aionmech-red), 
+                var(--aionmech-blue), 
+                transparent
+            );
+            animation: aionmechGlow 4s ease-in-out infinite;
+        }
+
+        @keyframes aionmechGlow {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .title {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--aionmech-orange), var(--aionmech-red), var(--aionmech-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+            letter-spacing: 0.5px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 18px;
+            background: var(--glass-bg);
+            border-radius: 25px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 15px var(--glass-shadow);
+        }
+
+        .status-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--aionmech-red);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: 0 0 20px rgba(211, 47, 47, 0.5);
+        }
+
+        .status-dot.connected {
+            background: var(--aionmech-green);
+            box-shadow: 0 0 25px var(--aionmech-green);
+            animation: connectedPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes connectedPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .status-dot::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            border-radius: 50%;
+            background: inherit;
+            opacity: 0.3;
+            animation: statusRipple 1.5s ease-out infinite;
+        }
+
+        @keyframes statusRipple {
+            0% { transform: scale(0.8); opacity: 0.6; }
+            100% { transform: scale(1.8); opacity: 0; }
+        }
+
+        #statusText {
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--text-primary);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+            min-height: 0; /* Allows flexbox to shrink */
+            /* Responsive layout for different screen sizes */
+        }
+        
+        /* Responsive breakpoints */
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+                padding: 15px;
+                gap: 15px;
+            }
+            
+            .control-panel {
+                width: 100%;
+                max-height: 300px;
+                order: 2;
+            }
+            
+            .color-wheel-container {
+                order: 1;
+                height: 400px;
+            }
+            
+            .color-wheel {
+                width: 350px;
+                height: 350px;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .color-wheel {
+                width: 280px;
+                height: 280px;
+            }
+            
+            .header {
+                padding: 15px 20px;
+            }
+            
+            .title {
+                font-size: 18px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .main-content {
+                padding: 10px;
+                gap: 10px;
+            }
+            
+            .color-wheel {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .control-panel {
+                padding: 15px;
+            }
+        }
+
+        .control-panel {
+            width: min(350px, 30vw);
+            min-width: 280px;
+            background: var(--glass-bg);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            flex-shrink: 0;
+            box-shadow: 0 8px 32px var(--glass-shadow);
+        }
+
+        /* Enhanced scrollbar for control panel */
+        .control-panel::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .control-panel::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+        }
+
+        .control-panel::-webkit-scrollbar-thumb {
+            background: var(--aionmech-orange);
+            border-radius: 6px;
+            transition: background 0.3s ease;
+        }
+
+        .control-panel::-webkit-scrollbar-thumb:hover {
+            background: var(--aionmech-red);
+        }
+
+        .color-wheel-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .color-wheel {
+            width: min(500px, 60vmin);
+            height: min(500px, 60vmin);
+            border-radius: 50%;
+            cursor: crosshair;
+            position: relative;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 0 30px rgba(0, 0, 0, 0.5),
+                inset 0 0 50px rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: radial-gradient(
+                circle at center,
+                transparent 45%,
+                rgba(255, 255, 255, 0.05) 50%,
+                transparent 55%
+            );
+            /* Ensure wheel stays circular and responsive */
+            aspect-ratio: 1;
+        }
+
+        .color-wheel:hover {
+            transform: scale(1.02);
+            box-shadow: 
+                0 0 50px rgba(0, 0, 0, 0.6),
+                inset 0 0 60px rgba(255, 255, 255, 0.15),
+                0 0 100px rgba(102, 126, 234, 0.3);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--accent-color);
+            font-weight: 700;
+            text-shadow: 0 0 10px var(--accent-color);
+            box-shadow: 
+                0 0 20px rgba(0, 0, 0, 0.8),
+                inset 0 0 30px rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .wheel-center:hover {
+            background: linear-gradient(135deg, #333 0%, #222 100%);
+            color: var(--accent-light);
+            text-shadow: 0 0 15px var(--accent-light);
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+
+        .wheel-center-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-bottom: 5px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            background: #000;
+            transition: all 0.3s ease;
+        }
+
+        .color-picker {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border: 4px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 
+                0 0 15px rgba(0, 0, 0, 0.8),
+                inset 0 0 10px rgba(255, 255, 255, 0.3);
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: radial-gradient(
+                circle at center,
+                rgba(255, 255, 255, 0.9) 30%,
+                transparent 70%
+            );
+        }
+
+        .color-picker::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: -6px;
+            right: -6px;
+            bottom: -6px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            animation: pickerPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pickerPulse {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.2); opacity: 0.3; }
+        }
+
+        .color-wheel:active .color-picker {
+            transform: translate(-50%, -50%) scale(1.2);
+            border-color: #00ff88;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 136, 0.8),
+                0 0 30px rgba(0, 0, 0, 0.8),
+                inset 0 0 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .mode-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .mode-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background: transparent;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .mode-tab.active {
+            background: var(--accent-color);
+            color: #000;
+            font-weight: 600;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--aionmech-orange);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .color-input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .color-input {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .color-input label {
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+
+        .color-input input {
+            width: 100%;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: white;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .hue-slider-container {
+            margin: 15px 0;
+        }
+
+        .hue-slider {
+            width: 100%;
+            height: 24px;
+            border-radius: 12px;
+            background: linear-gradient(to right, 
+                #ff0000 0%, #ffff00 16.66%, #00ff00 33.33%, 
+                #00ffff 50%, #0000ff 66.66%, #ff00ff 83.33%, #ff0000 100%);
+            position: relative;
+            cursor: pointer;
+            box-shadow: 
+                0 4px 15px rgba(0, 0, 0, 0.3),
+                inset 0 0 10px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .hue-slider:hover {
+            transform: scaleY(1.1);
+            box-shadow: 
+                0 6px 20px rgba(0, 0, 0, 0.4),
+                inset 0 0 15px rgba(255, 255, 255, 0.15);
+        }
+
+        .hue-handle {
+            position: absolute;
+            top: -8px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+            border: 3px solid rgba(0, 0, 0, 0.2);
+            border-radius: 50%;
+            transform: translateX(-50%);
+            cursor: grab;
+            box-shadow: 
+                0 4px 15px rgba(0, 0, 0, 0.3),
+                inset 0 0 10px rgba(255, 255, 255, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hue-handle::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #333 0%, #666 100%);
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .hue-handle:hover {
+            transform: translateX(-50%) scale(1.1);
+            box-shadow: 
+                0 6px 20px rgba(0, 0, 0, 0.4),
+                inset 0 0 15px rgba(255, 255, 255, 0.9);
+        }
+
+        .hue-handle:active {
+            cursor: grabbing;
+            transform: translateX(-50%) scale(0.95);
+        }
+
+        .preview-container {
+            text-align: center;
+        }
+
+        .color-preview {
+            width: 100%;
+            height: 60px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .apply-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--aionmech-orange), var(--aionmech-red));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .apply-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .apply-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 107, 53, 0.5);
+            background: linear-gradient(135deg, var(--aionmech-red), var(--aionmech-orange));
+        }
+
+        .apply-btn:hover::before {
+            left: 100%;
+        }
+
+        .apply-btn:disabled {
+            background: var(--aionmech-gray);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .connection-panel {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid #ff4444;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .connection-panel.connected {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: #00ff88;
+        }
+
+        /* Enhanced Button Styles */
+        .connect-btn {
+            background: linear-gradient(135deg, var(--aionmech-red) 0%, var(--aionmech-orange) 100%);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            margin-top: 12px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(211, 47, 47, 0.3);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-size: 13px;
+        }
+
+        .connect-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s;
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(211, 47, 47, 0.5);
+            background: linear-gradient(135deg, var(--aionmech-orange) 0%, var(--aionmech-red) 100%);
+        }
+
+        .connect-btn:hover::before {
+            left: 100%;
+        }
+
+        .connect-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Enhanced input fields */
+        .color-input input {
+            width: 100%;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: white;
+            text-align: center;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .color-input input:focus {
+            outline: none;
+            border-color: var(--aionmech-orange);
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.4);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Enhanced file input */
+        input[type="file"] {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: white;
+            padding: 8px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        input[type="file"]:focus {
+            outline: none;
+            border-color: var(--aionmech-blue);
+            box-shadow: 0 0 20px rgba(25, 118, 210, 0.3);
+        }
+
+        /* Enhanced firmware buttons */
+        .firmware-source-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .firmware-source-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .firmware-source-btn:hover::before {
+            left: 100%;
+        }
+
+        .firmware-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            font-weight: 600;
+        }
+
+        .firmware-btn:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 122, 204, 0.4);
+        }
+
+        .firmware-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .firmware-btn:not(:disabled):hover::before {
+            left: 100%;
+        }
+
+        /* Enhanced form controls */
+        input[type="range"] {
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-track {
+            background: linear-gradient(to right, #667eea, #764ba2);
+            height: 6px;
+            border-radius: 3px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+            cursor: pointer;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        input[type="checkbox"] {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        input[type="checkbox"]:checked {
+            background: linear-gradient(135deg, var(--aionmech-orange) 0%, var(--aionmech-red) 100%);
+            border-color: var(--aionmech-orange);
+        }
+
+        input[type="checkbox"]:checked::before {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #000;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        input[type="checkbox"]:hover {
+            border-color: var(--aionmech-orange);
+            box-shadow: 0 0 15px rgba(255, 107, 53, 0.4);
+        }
+
+        .value-display {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .sending {
+            animation: pulse 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">AIONMECH Systems Pendant</div>
+        <div class="status">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Disconnected</span>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="control-panel">
+            <div class="connection-panel" id="connectionPanel">
+                <div id="connectionStatus">🔌 Not Connected</div>
+                <div id="portInfo"></div>
+                <button class="connect-btn" id="connectBtn" onclick="selectPort()">Select Port</button>
+            </div>
+
+            <div class="mode-tabs">
+                <button class="mode-tab active" id="solidTab" onclick="setMode('solid')">Solid Color</button>
+                <button class="mode-tab" id="wheelTab" onclick="setMode('wheel')">RGB Wheel</button>
+                <button class="mode-tab" id="firmwareTab" onclick="setMode('firmware')">Firmware</button>
+                <button class="mode-tab" id="settingsTab" onclick="setMode('settings')">Settings</button>
+            </div>
+
+            <div class="section" id="solidSection">
+                <div class="section-title">Solid Color</div>
+                <div class="color-input-group">
+                    <div class="color-input">
+                        <label>R</label>
+                        <input type="number" id="redInput" min="0" max="255" value="0" onchange="updateSolidColor()">
+                    </div>
+                    <div class="color-input">
+                        <label>G</label>
+                        <input type="number" id="greenInput" min="0" max="255" value="0" onchange="updateSolidColor()">
+                    </div>
+                    <div class="color-input">
+                        <label>B</label>
+                        <input type="number" id="blueInput" min="0" max="255" value="0" onchange="updateSolidColor()">
+                    </div>
+                </div>
+                <div class="preview-container">
+                    <div class="color-preview" id="solidPreview"></div>
+                    <div class="value-display" id="solidValue">#000000</div>
+                </div>
+            </div>
+
+            <div class="section" id="wheelSection" style="display: none;">
+                <div class="section-title">RGB Wheel</div>
+                <div class="hue-slider-container">
+                    <label>Base Hue</label>
+                    <div class="hue-slider" id="hueSlider">
+                        <div class="hue-handle" id="hueHandle"></div>
+                    </div>
+                    <div class="value-display" id="hueValue">0°</div>
+                </div>
+                <div class="value-display" style="font-size: 11px; color: #666; margin-top: 10px;">
+                    Creates animated RGB wheel on pendant LCD
+                </div>
+            </div>
+
+            <div class="section" id="firmwareSection" style="display: none;">
+                <div class="section-title">🔧 Firmware Update</div>
+                
+                <div class="firmware-info" style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; margin-bottom: 15px;">
+                    <div style="font-size: 12px; color: #888; margin-bottom: 8px;">Current Status:</div>
+                    <div id="firmwareStatus" style="font-size: 14px; color: #00ff88;">✅ Ready for update</div>
+                </div>
+
+                <div class="firmware-controls">
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: #ccc;">Update Source:</label>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <button class="firmware-source-btn active" id="githubBtn" onclick="setFirmwareSource('github')" 
+                                    style="flex: 1; padding: 8px; background: #00ff88; color: #000; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                                📡 GitHub Latest
+                            </button>
+                            <button class="firmware-source-btn" id="localBtn" onclick="setFirmwareSource('local')"
+                                    style="flex: 1; padding: 8px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; font-size: 12px; cursor: pointer;">
+                                📁 Local File
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="githubSection">
+                        <div style="font-size: 11px; color: #666; margin-bottom: 10px;">
+                            🔄 Automatically downloads latest firmware from repository
+                        </div>
+                        <button class="firmware-btn" id="checkUpdateBtn" onclick="checkForUpdates()"
+                                style="width: 100%; padding: 10px; background: linear-gradient(45deg, #007acc, #005a99); border: none; border-radius: 6px; color: white; cursor: pointer; margin-bottom: 10px;">
+                            🔍 Check for Updates
+                        </button>
+                    </div>
+
+                    <div id="localSection" style="display: none;">
+                        <input type="file" id="firmwareFile" accept=".bin,.ino.bin" style="width: 100%; margin-bottom: 10px; padding: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: white;">
+                        <div style="font-size: 11px; color: #666; margin-bottom: 10px;">
+                            Select compiled .bin file for ESP32 WROOM
+                        </div>
+                    </div>
+
+                    <button class="firmware-btn" id="flashBtn" onclick="flashFirmware()" disabled
+                            style="width: 100%; padding: 12px; background: #666; border: none; border-radius: 6px; color: white; cursor: not-allowed; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                        ⚡ Flash Firmware
+                    </button>
+                </div>
+
+                <div id="flashProgress" style="display: none; margin-top: 15px;">
+                    <div style="background: rgba(0,0,0,0.3); border-radius: 6px; overflow: hidden; margin-bottom: 8px;">
+                        <div id="progressBar" style="width: 0%; height: 20px; background: linear-gradient(45deg, #00ff88, #00cc6a); transition: width 0.3s ease;"></div>
+                    </div>
+                    <div id="progressText" style="font-size: 12px; color: #888; text-align: center;">Ready to flash...</div>
+                </div>
+
+                <div class="firmware-warnings" style="margin-top: 15px; padding: 12px; background: rgba(255, 136, 0, 0.1); border: 1px solid #ff8800; border-radius: 6px;">
+                    <div style="font-size: 12px; color: #ff8800; font-weight: 600; margin-bottom: 5px;">⚠️ Important:</div>
+                    <div style="font-size: 11px; color: #888; line-height: 1.4;">
+                        • Disconnect pendant from CutControl first<br>
+                        • Keep USB cable connected during update<br>
+                        • Do not power off during flashing<br>
+                        • ESP32 will auto-restart after update
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" id="settingsSection" style="display: none;">
+                <div class="section-title">⚙️ User Settings</div>
+                
+                <div class="settings-group" style="margin-bottom: 20px;">
+                    <div class="setting-item" style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: #ccc;">Connection</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="autoConnect" style="margin: 0;">
+                            <span style="font-size: 14px; color: #e0e0e0;">Auto-connect to last port</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item" style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: #ccc;">Baud Rate</label>
+                        <select id="baudRate" style="width: 100%;">
+                            <option value="9600">9600</option>
+                            <option value="19200">19200</option>
+                            <option value="38400">38400</option>
+                            <option value="57600">57600</option>
+                            <option value="115200" selected>115200</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-item" style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: #ccc;">RGB Wheel Animation Speed</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="range" id="wheelSpeed" min="10" max="100" value="50" 
+                                   style="flex: 1; height: 6px; background: linear-gradient(to right, #667eea, #764ba2); border-radius: 3px; outline: none;">
+                            <span id="speedValue" style="font-size: 12px; color: #888; min-width: 30px;">50%</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item" style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: #ccc;">UI Theme</label>
+                        <select id="uiTheme" style="width: 100%;">
+                            <option value="dark" selected>Dark Mode</option>
+                            <option value="blue">Blue Accent</option>
+                            <option value="green">Green Accent</option>
+                            <option value="purple">Purple Accent</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-item" style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: #ccc;">LCD Display</label>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <input type="checkbox" id="lcdEnabled" checked style="margin: 0;">
+                            <span style="font-size: 14px; color: #e0e0e0;">Enable LCD display</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="lcdDimming" style="margin: 0;">
+                            <span style="font-size: 14px; color: #e0e0e0;">Auto-dim after 30 seconds</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: #ccc;">Default Axis on Startup</label>
+                        <select id="defaultAxis" style="width: 100%;">
+                            <option value="Z" selected>Z-Axis (Up/Down)</option>
+                            <option value="Y">Y-Axis (Forward/Back)</option>
+                            <option value="X">X-Axis (Left/Right)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="settings-actions" style="display: flex; gap: 10px;">
+                    <button onclick="saveSettings()" 
+                            style="flex: 1; padding: 10px; background: linear-gradient(45deg, #00ff88, #00cc6a); border: none; border-radius: 6px; color: #000; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;">
+                        💾 Save Settings
+                    </button>
+                    <button onclick="resetSettings()" 
+                            style="flex: 1; padding: 10px; background: linear-gradient(45deg, #ff4444, #cc3333); border: none; border-radius: 6px; color: white; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;">
+                        🔄 Reset
+                    </button>
+                </div>
+
+                <div class="settings-info" style="margin-top: 15px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 6px;">
+                    <div style="font-size: 11px; color: #666; line-height: 1.4;">
+                        💡 <strong>Pro Tips:</strong><br>
+                        • Auto-connect saves the last successful port<br>
+                        • Higher wheel speeds create faster color transitions<br>
+                        • LCD auto-dim conserves power during long sessions<br>
+                        • Settings are saved locally in your user profile
+                    </div>
+                </div>
+            </div>
+
+            <button class="apply-btn" id="applyBtn" onclick="applyChanges()">Apply to Pendant</button>
+            
+            <div class="section" style="margin-top: 20px;">
+                <div class="section-title">CutControl Shortcuts</div>
+                <div style="font-size: 11px; line-height: 1.4; color: #888;">
+                    <strong>XY Mode:</strong> ←→↑↓ (arrows)<br>
+                    <strong>Z Mode:</strong> PageUp/PageDown<br>
+                    <strong>Program:</strong> Alt+R(run), Space(pause), Alt+S(stop), Tab(nudge)<br>
+                    <em>Official AIONMECH CutControl shortcuts only</em>
+                </div>
+            </div>
+        </div>
+
+        <div class="color-wheel-container">
+            <canvas class="color-wheel" id="colorWheel" width="500" height="500"></canvas>
+            <div class="wheel-center" onclick="resetWheelToDefault()">
+                <div class="wheel-center-preview" id="wheelCenterPreview"></div>
+                <span style="font-size: 10px;">LIVE</span>
+            </div>
+            <div class="color-picker" id="colorPicker"></div>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
