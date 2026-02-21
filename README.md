@@ -152,14 +152,21 @@ Download from `windows-app/dist/`:
 Mr1AionCnCJogger/
 ├── README.md                   ← This file
 ├── WIRING.md                   ← Complete wiring guide
+├── platformio.ini              ← PlatformIO build configuration
 ├── docs/
 │   └── WIRING_GUIDE.html       ← Printable PDF version
 ├── esp32_pendant_serial_universal/
-│   ├── esp32_pendant_two_button.ino  ← 4-button firmware (recommended)
-│   └── esp32_pendant_single_button.ino
-├── backup_pendant.ino          ← Single-button version
+│   ├── esp32_pendant_serial_universal.ino  ← Full universal firmware (recommended)
+│   ├── esp32_pendant_two_button.ino        ← Two-button variant
+│   └── esp32_pendant_single_button.ino     ← Single-button variant
+├── src/
+│   └── main.cpp                ← PlatformIO entry point
+├── backup_pendant/
+│   └── backup_pendant.ino      ← Legacy backup
 └── windows-app/
     ├── src/main-universal.js   ← Electron main process
+    ├── src/renderer-universal.html ← Electron UI
+    ├── src/renderer-universal.js   ← Electron UI logic
     ├── dist/                   ← Built executables
     └── README.md               ← Windows app documentation
 ```

@@ -14,7 +14,7 @@
   Responsive UI for any resolution and DPI scaling
 */
 
-const { app, BrowserWindow, Tray, Menu, ipcMain, dialog, nativeImage } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, dialog, nativeImage, shell } = require('electron');
 // const { autoUpdater } = require('electron-updater'); // DISABLED - Can cause crashes
 const path = require('path');
 const os = require('os');
@@ -63,7 +63,6 @@ app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
 
 // Universal compatibility switches for all hardware
 app.commandLine.appendSwitch('ignore-gpu-blacklist');
-app.commandLine.appendSwitch('disable-gpu-driver-bug-workarounds'); 
 app.commandLine.appendSwitch('enable-webgl-draft-extensions');
 app.commandLine.appendSwitch('enable-webgl2-compute-context');
 
@@ -93,6 +92,66 @@ let heartbeatInterval = null;
 let trayUpdateInterval = null;
 // Track currently pressed keys to be able to force-release on errors/disconnect
 const pressedKeys = new Set();
+let driverPromptShown = false;
+let lastDriverPromptAt = 0;
+
+function execAsync(command) {
+  return new Promise((resolve) => {
+    exec(command, { windowsHide: true }, (error, stdout, stderr) => {
+      resolve({ error, stdout: stdout || '', stderr: stderr || '' });
+    });
+  });
+}
+
+async function maybePromptCp210xDriverInstall(ports) {
+  if (process.platform !== 'win32') return;
+
+  const now = Date.now();
+  if (driverPromptShown && (now - lastDriverPromptAt) < 60000) return;
+
+  const hasKnownSerialPort = ports.some((port) =>
+    port.manufacturer && (
+      port.manufacturer.includes('Silicon Labs') ||
+      port.manufacturer.includes('FTDI') ||
+      port.manufacturer.includes('Prolific') ||
+      port.manufacturer.includes('CH340') ||
+      port.manufacturer.includes('ESP32')
+    )
+  );
+
+  if (hasKnownSerialPort) return;
+
+  const pnp = await execAsync('powershell -NoProfile -Command "Get-PnpDevice | Where-Object { $_.InstanceId -like \"USB\\\\VID_10C4*\" } | Select-Object -First 1 -ExpandProperty Status"');
+  const hasCp210xHardware = (pnp.stdout || '').trim().length > 0;
+
+  const drivers = await execAsync('pnputil /enum-drivers | findstr /I "silicon labs cp210 cp210x"');
+  const hasCp210xDriver = (drivers.stdout || '').trim().length > 0;
+
+  if (!hasCp210xHardware && hasCp210xDriver) return;
+  if (!hasCp210xHardware && !hasCp210xDriver) return;
+
+  driverPromptShown = true;
+  lastDriverPromptAt = now;
+
+  const result = await dialog.showMessageBox(mainWindow || null, {
+    type: 'warning',
+    title: 'ESP32 Driver Required',
+    message: 'CP210x USB driver appears missing or not fully installed.',
+    detail: 'The pendant uses a Silicon Labs CP210x USB-UART bridge.\n\nClick Install Driver to open the official driver download page, then unplug/replug the pendant after installation.',
+    buttons: ['Install Driver', 'Open Device Manager', 'Ignore'],
+    defaultId: 0,
+    cancelId: 2,
+    noLink: true
+  });
+
+  if (result.response === 0) {
+    await execAsync('pnputil /scan-devices');
+    await shell.openExternal('https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers');
+    await shell.openExternal('ms-settings:windowsupdate');
+  } else if (result.response === 1) {
+    await execAsync('start devmgmt.msc');
+  }
+}
 
 // Auto-launch setup with AIONMECH branding
 const autoLauncher = new AutoLaunch({
@@ -216,7 +275,14 @@ const universalKeyMappings = {
 // Machine detection and process checking
 function detectCncSoftware() {
   return new Promise((resolve) => {
-    exec('tasklist /fo csv | findstr /i "Control"', (error, stdout) => {
+    // Build findstr pattern from ALL known CNC process names
+    const processNames = Object.values(cncSoftware).map(info => {
+      // Extract base name without .exe for broader matching
+      return info.processName.replace('.exe', '');
+    });
+    const findstrPattern = processNames.join(' ');
+    
+    exec(`tasklist /fo csv | findstr /i "${findstrPattern}"`, (error, stdout) => {
       if (error) {
         resolve({ detected: false, software: 'NONE', machine: 'MANUAL' });
         return;
@@ -577,6 +643,9 @@ function connectSerial() {
       });
     } else {
       console.log('No ESP32 pendant found, retrying...');
+      maybePromptCp210xDriverInstall(ports).catch((err) => {
+        console.warn('CP210x driver check failed:', err.message || err);
+      });
       scheduleReconnect();
     }
   }).catch(error => {
@@ -921,6 +990,14 @@ ipcMain.handle('test-connection', () => {
   return { success: false, message: 'No pendant connected' };
 });
 
+ipcMain.handle('reconnect-serial', () => {
+  if (serialPort && serialPort.isOpen) {
+    serialPort.close();
+  }
+  setTimeout(connectSerial, 1000);
+  return { success: true, message: 'Reconnection initiated' };
+});
+
 ipcMain.handle('set-theme', (event, theme) => {
   if (serialPort && serialPort.isOpen) {
     if (theme.useWheel) {
@@ -988,9 +1065,12 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
-  // Keep app running in system tray on Windows
+  // If tray is available, keep running in background; otherwise quit
   if (process.platform !== 'darwin') {
-    // Don't quit, just hide to tray
+    if (!tray) {
+      app.quit();
+    }
+    // else keep running in system tray
   }
 });
 
@@ -1010,4 +1090,4 @@ app.on('before-quit', () => {
 console.log('Universal AIONMECH CNC Pendant Controller starting...');
 console.log(`Platform: ${process.platform} ${process.arch}`);
 console.log(`Node: ${process.version}, Electron: ${process.versions.electron}`);
-console.log('Supported machines: FireControl, CutControl');
+console.log('Supported machines: FireControl, CutControl, Mach3, Mach4, LinuxCNC, UCCNC, Carbide Motion, UGS, OpenBuilds, CNCjs');

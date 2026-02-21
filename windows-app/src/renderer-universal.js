@@ -349,9 +349,13 @@ function setupControlButtons() {
         });
     }
     
-    document.getElementById('reconnect').addEventListener('click', () => {
+    document.getElementById('reconnect').addEventListener('click', async () => {
         addLog('Reconnecting to pendant...', 'info');
-        // Connection will be handled by main process
+        try {
+            await ipcRenderer.invoke('reconnect-serial');
+        } catch (e) {
+            addLog('Reconnect request sent', 'info');
+        }
     });
     
     // System info
@@ -467,9 +471,9 @@ function setupControlButtons() {
     document.getElementById('apply-positions').addEventListener('click', async () => {
         try {
             const toSend = [];
-            if (posXInput.value !== '') toSend.push(`MACHINE:POS,X,${parseFloat(posXInput.value)}`);
-            if (posYInput.value !== '') toSend.push(`MACHINE:POS,Y,${parseFloat(posYInput.value)}`);
-            if (posZInput.value !== '') toSend.push(`MACHINE:POS,Z,${parseFloat(posZInput.value)}`);
+            if (posXInput.value !== '') toSend.push(`POS:SET,,X,${parseFloat(posXInput.value)}`);
+            if (posYInput.value !== '') toSend.push(`POS:SET,,Y,${parseFloat(posYInput.value)}`);
+            if (posZInput.value !== '') toSend.push(`POS:SET,,Z,${parseFloat(posZInput.value)}`);
             for (const cmd of toSend) {
                 await ipcRenderer.invoke('send-pendant-command', cmd);
             }
@@ -488,9 +492,17 @@ function setupControlButtons() {
 
     
     // Machine detection
-    document.getElementById('auto-detect').addEventListener('click', () => {
+    document.getElementById('auto-detect').addEventListener('click', async () => {
         addLog('Scanning for CNC software...', 'info');
-        // Detection handled by main process
+        try {
+            const status = await ipcRenderer.invoke('get-pendant-status');
+            updateConnectionStatus(status.connected, status.port);
+            updateMachineStatus(status.machine);
+            updateSoftwareStatus(status.software);
+            addLog(`Detection complete: ${status.machine} (${status.software})`, 'info');
+        } catch (error) {
+            addLog(`Detection failed: ${error.message}`, 'error');
+        }
     });
     
     document.getElementById('refresh-machines').addEventListener('click', async () => {
@@ -784,7 +796,7 @@ window.addEventListener('resize', () => {
 });
 
 console.log('Universal AIONMECH CNC Pendant Controller - Renderer Ready');
-console.log('Supported machines: FireControl, CutControl');
+console.log('Supported machines: FireControl, CutControl, Mach3, Mach4, LinuxCNC, UCCNC, Carbide Motion, UGS, OpenBuilds, CNCjs');
 
 // Update event wiring from main
 ipcRenderer.on('update-status', () => {

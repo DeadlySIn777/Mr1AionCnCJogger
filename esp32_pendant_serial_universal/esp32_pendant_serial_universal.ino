@@ -1215,6 +1215,11 @@ void processSerialCommands(){
     } else if(c.startsWith("POS:RESET")){
       xPosition=yPosition=zPosition=0; needsAxisRedraw = true;
 
+    } else if(c=="POS:GET"){
+      Serial.printf("POS:X,%.4f\n", xPosition);
+      Serial.printf("POS:Y,%.4f\n", yPosition);
+      Serial.printf("POS:Z,%.4f\n", zPosition);
+
     } else if(c.startsWith("POS:SET,")){
       int a=c.indexOf(',',8), b=c.indexOf(',',a+1);
       if(a>0 && b>0){

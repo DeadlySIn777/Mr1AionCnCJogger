@@ -848,6 +848,22 @@ void processSerialCommands(){
     } else if(c.startsWith("POS:RESET")){
       xPosition=yPosition=zPosition=0; UI_Begin(); drawAxisDisplay(); UI_End();
 
+    } else if(c.startsWith("POS:SET,")){
+      int a=c.indexOf(',',8), b=c.indexOf(',',a+1);
+      if(a>0 && b>0){
+        char ax=c.charAt(a+1);
+        float val=c.substring(b+1).toFloat();
+        if(ax=='X'){ xPosition=val; }
+        else if(ax=='Y'){ yPosition=val; }
+        else if(ax=='Z'){ zPosition=val; }
+        UI_Begin(); drawAxisDisplay(); UI_End();
+      }
+
+    } else if(c=="POS:GET"){
+      Serial.printf("POS:X,%.4f\n", xPosition);
+      Serial.printf("POS:Y,%.4f\n", yPosition);
+      Serial.printf("POS:Z,%.4f\n", zPosition);
+
     } else if(c.startsWith("ENCODER:SCALE,")){
       int sc=c.substring(14).toInt(); if(sc>=1&&sc<=10){ encoderScale=sc; scaledEncoderPosition=0; Serial.printf("ENCODER_SCALE_SET:%d\n",sc); }
 
